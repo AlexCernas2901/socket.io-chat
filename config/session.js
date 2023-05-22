@@ -1,4 +1,5 @@
 const session = require('express-session');
+require("dotenv").config();
 
 const userSession = session({
   secret: process.env.secret_SESSION,
