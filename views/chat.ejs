@@ -7,7 +7,7 @@
       <a href="/logout" class="btn btn-primary">Cerrar sesión</a>
     </div>
     <div class="col-md-6">
-      <form id="message-form"class="text-center">
+      <form id="message-form" onsubmit="sendMessage(event)" class="text-center">
         <div class="input-group mb-3">
           <input
             type="text"
@@ -26,7 +26,36 @@
   </div>
 </div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="/public/chat.js"></script>
+<!-- Agregar enlace a Bootstrap JS (opcional) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
 
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  const messagesDiv = document.getElementById("messages");
+  const messageForm = document.getElementById("message-form");
+  const messageInput = document.getElementById("message-input");
+
+  // Función para enviar un mensaje al servidor
+  function sendMessage(event) {
+    event.preventDefault();
+    const message = messageInput.value;
+    socket.emit("chatMessage", message);
+    messageInput.value = "";
+  }
+
+  // Función para agregar un mensaje al chat
+  function addMessage(message, color) {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message");
+    messageElement.style.color = color;
+    messageElement.textContent = message;
+    messagesDiv.appendChild(messageElement);
+  }
+
+  // Evento cuando se recibe un nuevo mensaje del servidor
+  socket.on("chatMessage", (data) => {
+    addMessage(data.message, data.color);
+  });
+</script>
 <%- include("partials/footer.ejs")%>
