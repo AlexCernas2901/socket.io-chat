@@ -4,20 +4,19 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 require("dotenv").config();
 const userSession = require("./config/session");
-
 const bodyParser = require('body-parser');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Configuración de sesión
+// configuración de sesión
 app.use(userSession);
 
 app.set('view engine', 'ejs');
 
-// importando rutas dinamicas
+// importando rutas dinámicas
 const routes = require('./routes');
 
-// Rutas
+// rutas dinamicas
 app.use('/', routes);
 
 // configuración de Socket.io
@@ -26,30 +25,19 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
-  console.log('Un cliente se ha conectado');
 
-  // array para mensajes
-  const MAX_MESSAGES = 100;
-  let messages = [];
-
-  // Evento cuando se recibe un nuevo mensaje del cliente
+  // evento cuando se recibe un nuevo mensaje del cliente
   socket.on('chatMessage', (message) => {
-      // obteniendo datos de la session
-      const { color, username } = socket.request.session;
-
-      // agregando el nuevo mensaje al array
-      messages.push({ message: `[${username}] ${message}` });
-
-      // eliminando el mensaje más antiguo si se supera el límite
-      if (messages.length > MAX_MESSAGES) {
-          messages.shift();
-      }
-
-      console.log(messages.length - 1, messages)
-
-        // enviando el mensaje a todos los clientes conectados
-        io.emit('chatMessage', { message: `[${username}]: ${message}`, color, username });
-    });
+    // obteniendo datos de la sesión
+    const { color, username } = socket.request.session;
+    
+    io.emit('chatMessage', { message: `[${username}] ${message}`, color, username });
+  });
+  
+  socket.on('disconnect', () => {
+    const { username } = socket.request.session;
+    console.log(`${username}-left`);
+  });
 });
 
 const port = process.env.PORT;
